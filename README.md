@@ -25,7 +25,7 @@ HSIF is a comprehensive tool designed for analyzing the hidden services site wit
 
 ```bash
   pip3 install -r requirements.txt
-  python3 hsif
+  python3 hsif.py
 ```
     
 ## Up-Coming features
