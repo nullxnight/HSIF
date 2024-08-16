@@ -15,6 +15,7 @@ HSIF is a comprehensive tool designed for analyzing the hidden services site wit
     2. Onion Site Investigation
     3. Site Status Checker
     4. Scrape Links
+    5. Host Hidden Services
 
 ## Installation
 
@@ -27,6 +28,6 @@ HSIF is a comprehensive tool designed for analyzing the hidden services site wit
 
 Up-Coming features:
 
-- ~~Hosting Hidden Services~~
+- ~~Hosting Hidden Services~~ :ballot_box_with_check: Done
 - Crawler
 - EXIF data extraction
