@@ -8,6 +8,7 @@ import re
 import threading
 import logging
 from queue import Queue
+import shutil
 
 
 logging.basicConfig(filename='app.log', filemode='a', format='%(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -24,12 +25,6 @@ session = requests.Session()
 session.proxies = proxy
 
 def basic_checks():
-    if os.getuid() != 0:
-        logging.error("Script not run with SUDO")
-        print("[!] Run this script with SUDO!...")
-        exit()
-    else:
-        pass
     try:
         response = session.get("https://check.torproject.org/api/ip", timeout=10).text
         data = json.loads(response)
@@ -42,6 +37,40 @@ def basic_checks():
         os.system('systemctl start tor')
         time.sleep(4)
         basic_checks()
+
+def hostOnion():
+    if os.getuid() != 0:
+        print("[!] Run this script with SUDO!...")
+        exit()
+    else: pass
+    title = input("[+] Enter Site Name: ")
+
+    os.system(f"mkdir /var/www/html/{title}")
+    with open(f"/var/www/html/{title}/index.html",'a')as file:
+        file.write("Site Created!")
+    
+    #Getting Onion Domain!
+
+    with open(f"/etc/tor/torrc",'a')as file:
+        file.write(f"HiddenServiceDir /var/lib/tor/{title}/\n")
+        file.write(f"HiddenServicePort 80 127.0.0.1:80\n")
+    os.system("systemctl restart tor")
+    time.sleep(5)
+    with open(f"/var/lib/tor/{title}/hostname",'r')as file:
+        siteUrl = file.readline()
+        print(f"Site URL: http://{siteUrl}")
+        print("[+] Setting Up your New site!...")
+
+    #Creating copy of old config
+    shutil.copy("/etc/apache2/sites-available/000-default.conf",'/etc/apache2/sites-available/000-default.conf_old')
+    #Apache2 setup
+    with open('/etc/apache2/sites-available/000-default.conf','w') as file:
+        file.write(f"<VirtualHost *:80>\n\tDocumentRoot /var/www/html/{title}\n</VirtualHost>")
+    os.system("systemctl restart apache2")
+    time.sleep(3)
+    print(f"[+] Index: /var/www/html/{title}/index.html ")
+    print("[+] Done")
+
 
 def extract_monero(source_code):
     monero_pattern = r'\b(?:4[0-9AB][1-9A-HJ-NP-Za-km-z]{93})\b'
@@ -184,7 +213,7 @@ def main():
     """)
 
     print("[+] Available Options:- \n")
-    print('1. Onion Sites Grabber\n2. Onion Site Investigation\n3. Site Status Checker\n4. Scrape Links\n')
+    print('1. Onion Sites Grabber\n2. Onion Site Investigation\n3. Site Status Checker\n4. Scrape Links\n5. Host Your Onion Site\n')
     func = int(input("[+] Enter Your Choice: "))
     if func == 1:
         query = input("[+] Enter the Query to Grab Sites: ")
@@ -220,7 +249,8 @@ def main():
     elif func == 4:
         url = input("[+] Enter the URL to scrape links: ")
         scrape_links(url)
-
+    elif func == 5:
+        hostOnion()
     else:
         print("[!] Invalid Option Selected...")
         logging.error("Invalid option selected")
